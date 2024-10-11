@@ -1,6 +1,6 @@
 {
   "name": "@amada-org/ai-cmd",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "AI command-line tool with configuration and git commit features",
   "main": "index.js",
   "scripts": {
