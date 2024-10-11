@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc && npm install -g .",
-    "start": "tsc && node --disable-warning DEP0040 ./dist/cli.js "
+    "start": "tsc && node ./dist/cli.js "
   },
   "repository": {
     "type": "git",
