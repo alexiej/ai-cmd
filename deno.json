@@ -1,0 +1,5 @@
+{
+  "name": "@alexiej/ai-cmd",
+  "version": "1.1.0",
+  "exports": "./dist/cli.js"
+}
