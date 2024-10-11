@@ -1,5 +1,9 @@
 {
   "name": "@alexiej/ai-cmd",
   "version": "1.1.0",
-  "exports": "./dist/cli.js"
+  "exports": "./src/cli.ts",
+  "publish": {
+    "include": ["src"],
+    "exclude": ["src/tests"]
+  }
 }
