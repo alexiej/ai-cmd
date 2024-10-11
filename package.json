@@ -1,0 +1,33 @@
+{
+  "name": "ai-cmd",
+  "version": "1.0.0",
+  "description": "AI command-line tool with configuration and git commit features",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && npm install -g .",
+    "start": "tsc && node --disable-warning DEP0040 ./dist/cli.js "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bin": {
+    "ai-cmd": "./dist/cli.js"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/ascii-art": "^1.4.3",
+    "@types/figlet": "^1.7.0",
+    "@types/node": "^22.7.5",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "ascii-art": "^2.8.5",
+    "boxen": "^8.0.1",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "figlet": "^1.8.0",
+    "inquirer": "^12.0.0",
+    "openai": "^4.67.3",
+    "simple-git": "^3.27.0"
+  }
+}
