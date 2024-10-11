@@ -1,5 +1,5 @@
 {
-  "name": "@amada-org/ai-cmd",
+  "name": "@alexiej/ai-cmd",
   "version": "1.1.0",
   "description": "AI command-line tool with configuration and git commit features",
   "main": "index.js",
@@ -33,6 +33,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "@amada-org/ai-cmd": "^1.1.0",
     "ascii-art": "^2.8.5",
     "boxen": "^8.0.1",
     "chalk": "^5.3.0",

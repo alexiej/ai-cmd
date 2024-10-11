@@ -25,7 +25,7 @@ With the AI Command-line Tool, you can:
 To install the CLI tool globally, ensure you have Node.js installed, then run the following command:
 
 ```bash
-npm i @amada-org/ai-cmd
+npm i @alexiej/ai-cmd
 ```
 
 ## Usage
