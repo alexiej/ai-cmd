@@ -11,7 +11,7 @@ import { text } from "./theme.js";
 const CONFIG_DIR = path.join(os.homedir(), ".config", "ai-cmd");
 const CONFIG_FILE_PATH = path.join(CONFIG_DIR, "config.json");
 
-export const VERSION = "1.0.0";
+export const VERSION = "1.0.1";
 
 // Interface to represent the model configuration.
 interface ModelConfig {

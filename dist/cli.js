@@ -14,6 +14,8 @@ import { generateCommit } from "./commit.js";
 import { getLogo } from "./logo.js";
 import { textWrap } from "./utils/textWrap.js";
 import { getModel, VERSION, loadConfig, configure } from "./config.js";
+// OpenAI Warning: [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+process.removeAllListeners("warning");
 const program = new Command();
 const config = loadConfig();
 const model = getModel(config.model);

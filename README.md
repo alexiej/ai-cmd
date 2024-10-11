@@ -1,6 +1,6 @@
 # AI Command-line tool
 
-Version: 	1.0.0
+Version: 	1.0.1
 
 The AI Command-line Tool enhances your Git workflow by using AI models to automatically generate high-quality commit messages.
 Currently, it supports OpenAI, with plans to expand support to other models in future releases.
@@ -25,7 +25,7 @@ With the AI Command-line Tool, you can:
 To install the CLI tool globally, ensure you have Node.js installed, then run the following command:
 
 ```bash
-npm install -g ai-cmd
+npm i @amada-org/ai-cmd
 ```
 
 ## Usage

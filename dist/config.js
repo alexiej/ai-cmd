@@ -16,7 +16,7 @@ import { text } from "./theme.js";
 // Define the directory where the configuration will be stored.
 const CONFIG_DIR = path.join(os.homedir(), ".config", "ai-cmd");
 const CONFIG_FILE_PATH = path.join(CONFIG_DIR, "config.json");
-export const VERSION = "1.0.0";
+export const VERSION = "1.0.1";
 const DEFAULT_CONFIG = {
     model: {
         source: "OpenAI",

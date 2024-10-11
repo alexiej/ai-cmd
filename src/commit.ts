@@ -6,6 +6,14 @@ import { Model } from "./model.js";
 
 export async function generateCommit(model: Model) {
   try {
+    const modelStatus = model.status();
+    if (!modelStatus.isOk) {
+      console.log(
+        ` ${text.error("Model is not available:")} ${modelStatus.message}`,
+      );
+      process.exit(1);
+    }
+
     // Step 1: List modified or untracked files
     const modifiedFiles = execSync("git status --short", { encoding: "utf8" });
 

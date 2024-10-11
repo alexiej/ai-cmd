@@ -1,15 +1,27 @@
 {
-  "name": "ai-cmd",
-  "version": "1.0.0",
+  "name": "@amada-org/ai-cmd",
+  "version": "1.0.1",
   "description": "AI command-line tool with configuration and git commit features",
   "main": "index.js",
   "scripts": {
     "build": "tsc && npm install -g .",
     "start": "tsc && node --disable-warning DEP0040 ./dist/cli.js "
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexiej/ai-cmd.git"
+  },
+  "keywords": [
+    "git",
+    "ai",
+    "cli"
+  ],
+  "bugs": {
+    "url": "https://github.com/alexiej/ai-cmd/issues"
+  },
+  "homepage": "https://github.com/alexiej/ai-cmd#readme",
+  "author": "Arkadiusz Klemenko",
+  "license": "MIT",
   "bin": {
     "ai-cmd": "./dist/cli.js"
   },
