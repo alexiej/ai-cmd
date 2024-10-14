@@ -1,92 +1,125 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
+import { select } from "@inquirer/prompts";
 import { text } from "../theme.js";
 import OpenAI from "openai";
+const DEFAULT_MODEL = "gpt-4o-mini";
+export const OpenAIModelNames = [
+    {
+        name: `gpt-4o-mini\t${text.dim("Small model for fast, lightweight task.")}`,
+        value: "gpt-4o-mini",
+    },
+    {
+        name: `gpt-4o\t${text.dim("High-intelligence flagship model for complex, multi-step tasks")}`,
+        value: "gpt-4o",
+    },
+    {
+        name: `gpt-4-turbo\t${text.dim("The latest GPT-4 Turbo model")}`,
+        value: "gpt-4-turbo",
+    },
+    {
+        name: `gpt-3.5-turbo\t${text.dim("Turbo model with improved instruction following")}`,
+        value: "gpt-3.5-turbo",
+    },
+];
 export class OpenAIModel {
-    constructor(modelName) {
-        this.source = "OpenAI";
-        this.modelName = "";
+    constructor() {
         this.openai = null;
-        this.status = () => ({
-            isOk: this.initialized,
-            status: this.initialized ? "LIVE" : "DEAD",
-            message: this.initialized
-                ? text.success(" [OpenAI is live] ")
-                : text.red(this.lastError),
-        });
-        this.modelName = modelName;
-        this.initialized = false;
-        this.lastError = null;
-        this.initialize();
+        this.config = {
+            source: "OpenAI",
+            model: "gpt-4o-mini",
+        };
+        this.status = {
+            status: "idle",
+            message: text.dim("[Not initialized] "),
+        };
     }
-    // Method to get the single instance (Singleton pattern)
-    static getInstance(modelName) {
-        if (!OpenAIModel.instance || OpenAIModel.instance.modelName !== modelName) {
-            OpenAIModel.instance = new OpenAIModel(modelName);
+    static getInstance() {
+        if (!OpenAIModel.instance) {
+            OpenAIModel.instance = new OpenAIModel();
         }
         return OpenAIModel.instance;
     }
     initialize() {
-        if (this.openai) {
-            return this.openai;
-        }
         try {
+            // it was initialized already
+            if (this.openai) {
+                return this.openai;
+            }
             // Get the OpenAI API key from the .env file
             const openaiApiKey = process.env.OPENAI_API_KEY;
             if (!openaiApiKey) {
                 this.openai = null;
-                this.initialized = false;
-                this.lastError = " [No OpenAI API key found] ";
+                this.status = {
+                    status: "error",
+                    message: text.red(" [No OpenAI API key found] "),
+                };
                 return null;
             }
             this.openai = new OpenAI({
                 apiKey: openaiApiKey,
             });
-            this.initialized = true;
+            this.status = {
+                status: "running",
+                message: text.green(" [OpenAI is live] "),
+            };
         }
         catch (error) {
             this.openai = null;
-            this.initialized = false;
-            this.lastError = `${error}`;
+            this.status = {
+                status: "error",
+                message: text.red(` [${error}] `),
+            };
         }
         return this.openai;
     }
-    prompt(prompt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const openai = this.initialize();
-                if (!openai) {
-                    return "";
-                }
-                const response = yield openai.chat.completions.create({
-                    model: this.modelName,
-                    messages: [
-                        { role: "system", content: "You are a helpful assistant." },
-                        { role: "user", content: prompt },
-                    ],
-                });
-                if (!response ||
-                    response.choices.length == 0 ||
-                    response.choices[0].message === null ||
-                    response.choices[0].message.content === null) {
-                    throw "Empty response";
-                }
-                const generatedMessage = response.choices[0].message.content
-                    .replace("```bash", "")
-                    .replace("`", "")
-                    .trim();
-                return generatedMessage;
-            }
-            catch (error) {
-                throw error;
-            }
+    async init(config) {
+        try {
+            this.config = config;
+            this.initialize();
+        }
+        catch (error) {
+            this.status = {
+                status: "error",
+                message: text.red(` [${error}] `),
+            };
+        }
+        return this;
+    }
+    async configure() {
+        const modelName = await select({
+            message: `Select model name for OpenAI:`,
+            default: DEFAULT_MODEL,
+            choices: OpenAIModelNames,
         });
+        this.config.model = modelName;
+        return this.config;
+    }
+    async prompt(prompt) {
+        try {
+            const openai = this.initialize();
+            if (!openai) {
+                return "";
+            }
+            const response = await openai.chat.completions.create({
+                model: this.config.model,
+                messages: [
+                    { role: "system", content: "You are a helpful assistant." },
+                    { role: "user", content: prompt },
+                ],
+            });
+            if (!response ||
+                response.choices.length == 0 ||
+                response.choices[0].message === null ||
+                response.choices[0].message.content === null) {
+                throw "Empty response";
+            }
+            const generatedMessage = response.choices[0].message.content
+                .replace("```bash", "")
+                .replace("`", "")
+                .trim();
+            return generatedMessage;
+        }
+        catch (error) {
+            throw error;
+        }
     }
 }

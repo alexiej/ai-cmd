@@ -6,10 +6,9 @@ import { Model } from "./model.js";
 
 export async function generateCommit(model: Model) {
   try {
-    const modelStatus = model.status();
-    if (!modelStatus.isOk) {
+    if (model.status.status === "error") {
       console.log(
-        ` ${text.error("Model is not available:")} ${modelStatus.message}`,
+        ` ${text.error("Model is not available:")} ${model.status.message}`,
       );
       process.exit(1);
     }
@@ -174,7 +173,7 @@ Please generate a proper git commit message (AND ONLY MESSAGE WITHOUT ANY EXPLAN
     const chatGptPrompt = generatePrompt(gitDiff);
 
     console.log(
-      `${text.dim("Using")} ${text.orange(model.source + " " + model.modelName)} ${text.dim(" to generate commit message..\n")}`,
+      `${text.dim("Using")} ${text.orange(model.config.source + " " + model.config.model)} ${text.dim(" to generate commit message..\n")}`,
     );
     // Step 6: Use Model to generate the commit message
     const promptResult = (await model.prompt(chatGptPrompt))

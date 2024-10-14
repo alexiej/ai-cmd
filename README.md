@@ -67,8 +67,12 @@ Closes #123
 ## Future improvements:
 
 - **Support for more AI models**: Expand support to other AI models beyond OpenAI, Claude, and Ollama.
-- **Review process for code**: Implement a feature that allows the AI to review code changes and suggest improvements.
-- **Image generation**: Add functionality for generating images or diagrams based on the project or commit context.
+- **`review` process for code**: Implement a feature that allows the AI to review code changes and suggest improvements.
+- **`summary` process for code**: Implement a summary for the code
+- **`diff` process for code**: Implement a diff from git diff
+- **`feature` process for code**: Implement a feature implementaation, when you can ask AI what to do, and it will generate the code
+
+- **Image generation**: Add functionality for generating images .
 
 ## LICENCE
 

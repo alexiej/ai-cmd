@@ -7,6 +7,7 @@ import { generateCommit } from "./commit.js";
 import { getLogo } from "./logo.js";
 import { textWrap } from "./utils/textWrap.js";
 import { getModel, VERSION, loadConfig, configure } from "./config.js";
+import { showCustomColoredDiff } from "./diff.js";
 
 // OpenAI Warning: [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 process.removeAllListeners("warning");
@@ -14,7 +15,7 @@ process.removeAllListeners("warning");
 const program = new Command();
 
 const config = loadConfig();
-const model = getModel(config.model);
+const model = await getModel(config.model.source).init(config.model);
 
 program
   .name("ai-cmd")
@@ -29,7 +30,7 @@ program
       ) +
       "\n" +
       `\n ${text.dim("Version: \t")} ${text.white(VERSION)}` +
-      `\n ${text.dim("Model: \t")} ${text.white(model.source + " " + model.modelName)}  ${model.status().message}`,
+      `\n ${text.dim("Model: \t")} ${text.white(model.config.source + " " + model.config.model)}\n\t\t${model.status.message}`,
   )
   .configureHelp({
     commandUsage: (cmd) => text.success(`${cmd.name()} command [options]`),
@@ -43,6 +44,13 @@ program
   .description("Configure model")
   .action(async () => {
     await configure(); // Call the generateCommit function here
+  });
+
+program
+  .command("diff")
+  .description("Git diff a file")
+  .action(async () => {
+    await showCustomColoredDiff(); // Call the generateCommit function here
   });
 
 program
