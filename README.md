@@ -2,7 +2,6 @@
 
 Version: 	1.1.0
 
-[![asciicast](https://asciinema.org/a/569377.svg)](https://asciinema.org/a/569377)
 
 
 
