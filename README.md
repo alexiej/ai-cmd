@@ -13,12 +13,12 @@ With the AI Command-line Tool, you can:
 - Easily configure and switch between models.
 
 
+
 ## Features
 
 - **AI-powered commit messages**: Automatically generate detailed commit messages based on code changes.
 - **Support for multiple AI models**: Easily switch between OpenAI models.
 - **Integrated with Git**: Seamless interaction with Git for streamlined commit workflows.
-
 
 ## Installation
 
