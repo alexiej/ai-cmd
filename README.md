@@ -2,6 +2,10 @@
 
 Version: 	1.1.0
 
+[![asciicast](https://asciinema.org/a/569377.svg)](https://asciinema.org/a/569377)
+
+
+
 The AI Command-line Tool enhances your Git workflow by using AI models to automatically generate high-quality commit messages.
 Currently, it supports OpenAI, with plans to expand support to other models in future releases.
 It helps streamline the commit process by providing tailored, insightful messages
