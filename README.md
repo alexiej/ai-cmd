@@ -1,6 +1,10 @@
 # AI Command-line tool
 
+<<<<<<< HEAD
 Version: 	1.2.0
+=======
+Version: 	1.1.2
+>>>>>>> 54b3a4204172e223b3cd160a9e17f01ec15633bc
 
 [![asciicast](https://asciinema.org/a/680800.svg)](https://asciinema.org/a/680800)
 
