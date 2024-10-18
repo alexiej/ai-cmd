@@ -30,7 +30,9 @@ program
       ) +
       "\n" +
       `\n ${text.dim("Version: \t")} ${text.white(VERSION)}` +
-      `\n ${text.dim("Model: \t")} ${text.white(model.config.source + " " + model.config.model)}\n\t\t${model.status.message}`,
+      `\n ${text.dim("Model: \t")} ${text.white(model.config.source + " " + model.config.model)}\n\t\t${model.status.message}` +
+      `\n\n ${text.dim("Examples: \t")} ${text.white("ai-cmd diff -u src/**/*.ts")}` +
+      `\n ${text.dim("\t \t")} ${text.white("ai-cmd commit")}`,
   )
   .configureHelp({
     commandUsage: (cmd) => text.success(`${cmd.name()} command [options]`),
@@ -47,16 +49,25 @@ program
   });
 
 program
-  .command("diff")
-  .description("Git diff a file")
-  .action(async () => {
-    await showCustomColoredDiff(); // Call the generateCommit function here
+  .command("diff [args...]")
+  .description(
+    "Show a Git diff of staged and unstaged changes with custom highlighting",
+  )
+  // .argument("[file]", "Show staged changes only")
+  .option("-s, --staged", "Show staged changes only")
+  .option("-u, --unstaged", "Show unstaged changes only")
+  //for testing run: `npm start -- diff -u -s`
+  .action(async (args, options) => {
+    const { staged, unstaged } = options;
+    await showCustomColoredDiff(staged || !unstaged, unstaged || !staged, args);
   });
 
 program
   .command("commit")
-  .description("Git commit a file")
-  .action(async () => {
+  .description(
+    "Generate a Git commit based on the current staged changes and AI-suggested commit message",
+  )
+  .action(async (o) => {
     await generateCommit(model); // Call the generateCommit function here
   });
 

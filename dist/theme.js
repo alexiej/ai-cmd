@@ -8,6 +8,7 @@ const RED = "#ff5252"; // Red for errors
 const GRAY = "#d1ccc0"; // Red for errors
 // Define color constants
 const TEXT_COLOR = "#FFFFFF"; // Light blue for headers
+const BORDER_COLOR = "#646464"; // Very dim gray
 const HEADER_COLOR = "#34ace0"; // Light blue for headers
 const SUCCESS_COLOR = "#33d9b2"; // Greenish for success messages
 const WARNING_COLOR = "#ffb142"; // Orange for warnings
@@ -32,12 +33,16 @@ export const text = {
     info: chalk.hex(INFO_COLOR),
     highlight: chalk.hex(HIGHLIGHT_COLOR),
     dim: chalk.hex(DIM_COLOR),
+    border: chalk.hex(BORDER_COLOR),
     background: chalk.bgHex(BACKGROUND_COLOR),
+    redLine: chalk.hex("#FFFFFF").bgHex("#E57373"), // Unstaged Red (lighter red)
+    greenLine: chalk.hex("#FFFFFF").bgHex("#4DB6AC"), // Unstaged Green (lighter green)
+    redStageLine: chalk.hex("#FFFFFF").bgHex("#C62828"), // Staged Red (darker red)
+    greenStageLine: chalk.hex("#FFFFFF").bgHex("#00695C"), // Staged Green (darker green)
 };
 export const window = {
     message: (text) => boxen(chalk.hex(TEXT_COLOR)(text), {
         padding: 1,
-        margin: 1,
         borderStyle: "double",
         align: "center",
         borderColor: HEADER_COLOR, // Light blue border for header

@@ -12,7 +12,7 @@ import { OllamaModel } from "./models/ollama.js";
 const CONFIG_DIR = path.join(os.homedir(), ".config", "ai-cmd");
 const CONFIG_FILE_PATH = path.join(CONFIG_DIR, "config.json");
 
-export const VERSION = "1.1.0";
+export const VERSION = "1.2.0";
 
 interface Config {
   model: ModelConfig;

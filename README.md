@@ -1,8 +1,9 @@
 # AI Command-line tool
 
-Version: 	1.1.0
+Version: 	1.2.0
 
 [![asciicast](https://asciinema.org/a/680800.svg)](https://asciinema.org/a/680800)
+
 
 The AI Command-line Tool enhances your Git workflow by using AI models to automatically generate high-quality commit messages.
 Currently, it supports OpenAI, with plans to expand support to other models in future releases.
@@ -13,8 +14,7 @@ commit formats.
 With the AI Command-line Tool, you can:
 - Automatically generate conventional commit messages.
 - Easily configure and switch between models.
-
-
+- Show nice diff for changed files.
 
 ## Features
 
@@ -64,15 +64,53 @@ feat: Add user authentication to the application
 Closes #123
 ```
 
+### Diff Command
+
+Show a Git diff of staged and unstaged changes with custom highlighting.
+
+
+```bash
+ai-cmd diff -u src/**/*.ts
+```
+
+## Command Line Help
+
+```bash
+AI Command-line tool
+-----------------------------
+This software enhances Git with AI-powered commit message generation
+using OpenAI, Claude, and Ollama. Automatically create tailored,
+insightful commit messages to streamline your development process.
+
+ Version: 	 1.2.0
+ Model: 	 Ollama mistral
+		 [Ollama is live - 3 models available]
+
+ Examples: 	 ai-cmd diff -u src/**/*.ts
+ 	 	 ai-cmd commit
+
+Options:
+  -V, --version             output the version number
+  -h, --help                display help for command
+
+Commands:
+  config                    Configure model
+  diff [options] [args...]  Show a Git diff of staged and unstaged changes with custom
+                            highlighting
+  commit                    Generate a Git commit based on the current staged changes and
+                            AI-suggested commit message
+  help [command]            display help for command
+```
+
 ## Future improvements:
 
 - **Support for more AI models**: Expand support to other AI models beyond OpenAI, Claude, and Ollama.
 - **`review` process for code**: Implement a feature that allows the AI to review code changes and suggest improvements.
 - **`summary` process for code**: Implement a summary for the code
-- **`diff` process for code**: Implement a diff from git diff
 - **`feature` process for code**: Implement a feature implementaation, when you can ask AI what to do, and it will generate the code
 
 - **Image generation**: Add functionality for generating images .
+
 
 ## LICENCE
 

@@ -14,7 +14,7 @@
 
 import { tokenize } from "./index.js";
 
-let theme = import("./themes/default.js");
+let theme = import("./themes/termcolor-dark.js");
 
 /**
  * Highlight a string passed as argument and return a string that can directly be printed
@@ -33,7 +33,7 @@ export const highlightText = async (src, lang) => {
     src,
     lang,
     (str, token) =>
-      (res += token ? `${themeMap[token] ?? ""}${str}\x1b[0m` : str),
+      (res += `${token ? themeMap[token] ?? themeMap.default : themeMap.default}${str}\x1b[0m`),
   );
 
   return res;

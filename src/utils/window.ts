@@ -1,32 +1,45 @@
-import { textWrap } from "./textWrap.js";
-
+import { textHardWrap, textWrap } from "./textWrap.js";
+import { text } from "../theme.js";
 // Function to draw a line of a specific length
 const drawLine = (length: number, char: string = "─") => {
   return char.repeat(length);
 };
 
-export function window(header: string, text: string) {
-  // Define the width of the content box
-  const contentWidth = 50;
+const WIDTH = process.stdout.columns || 80; // Terminal width
 
-  // Wrap the text to fit within the content width
-  const wrappedText = textWrap(text, contentWidth - 2);
+const HEADER_TOP = "──────┬";
+const HEADER_MID = "──────┴";
+const HEADER_TEX = "      │";
+const HEADER_BOT = "──────┴";
+export const PAD_WIDTH = 6;
 
-  // Create the title bar
-  const titleBar = `┌${drawLine(contentWidth, "─")}┐`;
+const WIDTH_TEXT = WIDTH - HEADER_TOP.length;
 
-  // Create the bottom border
-  const bottomBorder = `└${drawLine(contentWidth, "─")}┘`;
+export const LINE_TOP = text.border(HEADER_TOP + drawLine(WIDTH_TEXT));
+export const LINE_MID = text.border(HEADER_MID + drawLine(WIDTH_TEXT));
+export const LINE_DIV =
+  text.border(HEADER_TEX) + text.border(drawLine(WIDTH_TEXT, "-"));
 
-  // Create the content lines, wrapping the text
-  const contentLines = wrappedText
-    .split("\n")
-    .map((line) => `│ ${line.padEnd(contentWidth - 2)} │`)
-    .join("\n");
+export const LINE_TEX = text.border(HEADER_TEX) + " ";
+export const LINE_BOT = text.border(HEADER_BOT + drawLine(WIDTH_TEXT));
 
-  // Combine everything to form the window
-  const windowContent = `${titleBar}\n${contentLines}\n${bottomBorder}`;
+export function getLines(content: string): string[] {
+  if (content == "") {
+    return [""];
+  }
 
-  // Output to the console
-  return windowContent;
+  let result = [];
+
+  // Adjust width considering the length of the prefix
+  const availableWidth = WIDTH_TEXT - 2; // 3 is for padding and the "│" symbol
+  const wrappedContent = textHardWrap(content, availableWidth);
+
+  // let isHeader = true;
+  for (let line of wrappedContent) {
+    for (let r of line.lines) {
+      result.push(r);
+    }
+  }
+
+  return result;
 }

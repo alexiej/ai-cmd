@@ -1,20 +1,9 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
+import { minimatch } from "minimatch";
 import { simpleGit } from "simple-git";
-import chalk from "chalk";
-// import { highlightText } from "./lib/speed-highlight.js";
-// import speedHighlight from "./lib/speed-highlight/terminal.d.ts";
-// import { highlight } from "./lib/speed-highlight/terminal.js";
 // @ts-nocheck
 import { highlightText } from "./lib/speed-highlight/terminal.js";
-import { window } from "./utils/window.js";
+import { LINE_TOP, LINE_MID, LINE_BOT, getLines, LINE_TEX, PAD_WIDTH, LINE_DIV, } from "./utils/window.js";
+import { text } from "./theme.js";
 function parseHunk(lines, startLine) {
     const match = startLine.match(/^@@ -(\d+),?(\d*) \+(\d+),?(\d*) @@/);
     if (!match)
@@ -26,9 +15,10 @@ function parseHunk(lines, startLine) {
         newStart,
         newLines: newLines || 1,
         content: lines,
+        isStaged: false,
     };
 }
-function parseDiffOutput(diffOutput) {
+function parseDiffOutput(diffOutput, isStaged, filesFilter = []) {
     const diffFiles = [];
     const sections = diffOutput.split(/^diff --git /m).slice(1);
     sections.forEach((section) => {
@@ -39,11 +29,18 @@ function parseDiffOutput(diffOutput) {
         const hunks = [];
         let currentHunkLines = [];
         let currentHunkHeader = null;
+        // Apply the file filter using minimatch for glob pattern matching
+        const fileMatchesFilter = filesFilter.length === 0 ||
+            filesFilter.some((pattern) => minimatch(newFilePath, pattern));
+        if (!fileMatchesFilter) {
+            // Skip the file if it doesn't match the filter
+            return;
+        }
         lines.forEach((line) => {
             if (line.startsWith("@@ ")) {
                 if (currentHunkHeader) {
                     const hunk = parseHunk(currentHunkLines, currentHunkHeader);
-                    hunks.push(hunk);
+                    hunks.push({ ...hunk, isStaged: isStaged });
                 }
                 currentHunkHeader = line;
                 currentHunkLines = [];
@@ -54,7 +51,7 @@ function parseDiffOutput(diffOutput) {
         });
         if (currentHunkHeader) {
             const hunk = parseHunk(currentHunkLines, currentHunkHeader);
-            hunks.push(hunk);
+            hunks.push({ ...hunk, isStaged: isStaged });
         }
         diffFiles.push({
             filePath: newFilePath || oldFilePath,
@@ -65,61 +62,121 @@ function parseDiffOutput(diffOutput) {
     });
     return diffFiles;
 }
-function syntaxHighlight(code, language) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield highlightText(code, language);
-        // const validLanguage = hljs.getLanguage(language) ? language : "plaintext";
-        // return hljs.highlight(code, { language: validLanguage }).value;
+function combineDiffs(stagedDiff, unstagedDiff) {
+    const combinedFiles = {};
+    // Helper function to process staged/unstaged diffs and flatten hunks into lines
+    const processDiff = (diffFiles, isStaged) => {
+        diffFiles.forEach((file) => {
+            if (!combinedFiles[file.filePath]) {
+                combinedFiles[file.filePath] = {
+                    filePath: file.filePath,
+                    oldFilePath: file.oldFilePath,
+                    newFilePath: file.newFilePath,
+                    hunks: [],
+                };
+            }
+            file.hunks.forEach((hunk) => {
+                combinedFiles[file.filePath].hunks.push({
+                    ...hunk,
+                    isStaged: isStaged,
+                });
+            });
+        });
+    };
+    // Process both staged and unstaged diffs
+    processDiff(stagedDiff, true);
+    processDiff(unstagedDiff, false);
+    // Sort the combined lines by line number
+    Object.values(combinedFiles).forEach((file) => {
+        file.hunks = file.hunks.sort((a, b) => {
+            // Sort by hunk index first, then by line number
+            if (a.newStart !== b.newStart)
+                return a.newStart - b.newStart;
+            if (a.isStaged !== b.isStaged)
+                return (a.isStaged ? 0 : 1) - (b.isStaged ? 0 : 1);
+            return 0;
+        });
     });
+    return Object.values(combinedFiles);
 }
-function displayDiff(diffFiles) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let text = "";
-        // diffFiles.forEach((file) => {
-        for (const file of diffFiles) {
-            const title = chalk.hex("#3B82F6")(`${file.filePath}`);
-            text = "";
-            const extension = file.filePath.split(".").pop();
-            const language = extension !== null && extension !== void 0 ? extension : "md";
-            for (const hunk of file.hunks) {
-                for (const line of hunk.content) {
-                    // .forEach((line) => {
-                    if (line.startsWith("+")) {
-                        text +=
-                            "\n" +
-                                chalk.bgHex("#34D399")(" ") +
-                                " " +
-                                (yield syntaxHighlight(line.slice(1), language)); // Additions with syntax highlighting
-                    }
-                    else if (line.startsWith("-")) {
-                        text +=
-                            "\n" +
-                                chalk.bgHex("#ff5252")(" ") +
-                                " " +
-                                (yield syntaxHighlight(line.slice(1), language)); // Deletions with syntax highlighting
-                    }
-                    else if (line.startsWith("@@")) {
-                        text += "\n" + chalk.yellow(line); // Hunk headers in yellow
-                    }
-                    else {
-                        text += "\n" + chalk.gray(line); // Context lines in gray
-                    }
+async function syntaxHighlight(code, language) {
+    return await highlightText(code, language);
+}
+async function displayDiff(diffFiles) {
+    const drawLine = async (prefix, line, language = "") => {
+        let isHeader = true;
+        for (let l of getLines(line)) {
+            const lh = language ? await syntaxHighlight(l, language) : text.border(l);
+            if (isHeader) {
+                console.log(prefix + lh);
+                isHeader = false;
+            }
+            else {
+                console.log(LINE_TEX + lh);
+            }
+        }
+    };
+    for (const file of diffFiles) {
+        // if (file.filePath != "src/diff.ts") {
+        //   continue;
+        // console.log(JSON.stringify(file, null, 2));
+        const title = text.blue(`${file.filePath}`);
+        console.log("\n" + LINE_TOP);
+        await drawLine(LINE_TEX, title);
+        console.log(LINE_MID);
+        const extension = file.filePath.split(".").pop();
+        const language = extension ?? "md";
+        for (const hunk of file.hunks) {
+            const green = hunk.isStaged ? text.greenStageLine : text.greenLine;
+            const red = hunk.isStaged ? text.redStageLine : text.redLine;
+            let isn = hunk.newStart; // Staged new start
+            let iso = hunk.oldStart; // Staged new start
+            for (const line of hunk.content) {
+                if (line.startsWith("+")) {
+                    await drawLine(green(` ${isn}.`.padEnd(PAD_WIDTH)) + text.success("│ "), line.slice(1), language);
+                    isn += 1;
+                }
+                else if (line.startsWith("-")) {
+                    await drawLine(red(` ${iso}.`.padEnd(PAD_WIDTH)) + text.error("│ "), line.slice(1), language);
+                    iso += 1;
+                }
+                else if (line.startsWith("@@")) {
+                    await drawLine(text.yellow(` ${isn}.`.padEnd(PAD_WIDTH)) + text.yellow("│ "), line.slice(1), language);
+                    isn += 1;
+                    iso += 1;
+                }
+                else if (line.startsWith("\\")) {
+                    await drawLine(red(` ${iso}.`.padEnd(PAD_WIDTH)) + text.red("│ "), line.slice(1), undefined);
+                    iso += 1;
+                }
+                else {
+                    await drawLine(text.border(` ${isn}.`.padEnd(PAD_WIDTH)) + text.border("│ "), line.slice(1), language);
+                    isn += 1;
+                    iso += 1;
                 }
             }
-            console.log(window(title, text));
+            if (hunk != file.hunks[file.hunks.length - 1]) {
+                console.log(LINE_DIV);
+            }
         }
-    });
+        console.log(LINE_BOT);
+    }
 }
-export function showCustomColoredDiff() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const git = simpleGit();
-        try {
-            const diffOutput = yield git.diff(["--cached"]);
-            const parsedDiff = parseDiffOutput(diffOutput);
-            yield displayDiff(parsedDiff);
-        }
-        catch (error) {
-            console.error("Failed to get and display diff:", error);
-        }
-    });
+export async function showCustomColoredDiff(staged = false, unstaged = false, filesFilter = []) {
+    const git = simpleGit();
+    try {
+        const stagedDiffOutput = await git.diff(["--cached"]);
+        const unstagedDiffOutput = await git.diff();
+        const stagedDiff = staged
+            ? parseDiffOutput(stagedDiffOutput, true, filesFilter)
+            : [];
+        const unstagedDiff = unstaged
+            ? parseDiffOutput(unstagedDiffOutput, false, filesFilter)
+            : [];
+        const combinedDiff = combineDiffs(stagedDiff, unstagedDiff);
+        await displayDiff(combinedDiff);
+    }
+    catch (error) {
+        console.error("Failed to get and display diff:", error);
+    }
 }
