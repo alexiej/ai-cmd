@@ -73,6 +73,9 @@ Show a Git diff of staged and unstaged changes with custom highlighting.
 ai-cmd diff -u src/**/*.ts
 ```
 
+<img width="715" alt="image" src="https://github.com/user-attachments/assets/aae70dd5-7e56-4571-9a3e-266ddb7d2f29">
+
+
 ## Command Line Help
 
 ```bash
