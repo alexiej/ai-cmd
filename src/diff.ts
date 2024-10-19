@@ -46,11 +46,7 @@ function parseHunk(lines: string[], startLine: string): DiffHunk {
   };
 }
 
-function parseDiffOutput(
-  diffOutput: string,
-  isStaged: boolean,
-  filesFilter: string[] = [],
-): DiffFile[] {
+function parseDiffOutput(diffOutput: string, isStaged: boolean): DiffFile[] {
   const diffFiles: DiffFile[] = [];
   const sections = diffOutput.split(/^diff --git /m).slice(1);
 
@@ -63,16 +59,6 @@ function parseDiffOutput(
     const hunks: DiffHunk[] = [];
     let currentHunkLines: string[] = [];
     let currentHunkHeader: string | null = null;
-
-    // Apply the file filter using minimatch for glob pattern matching
-    const fileMatchesFilter =
-      filesFilter.length === 0 ||
-      filesFilter.some((pattern) => minimatch(newFilePath, pattern));
-
-    if (!fileMatchesFilter) {
-      // Skip the file if it doesn't match the filter
-      return;
-    }
 
     lines.forEach((line) => {
       if (line.startsWith("@@ ")) {
@@ -247,6 +233,7 @@ async function displayDiff(diffFiles: DiffFile[]) {
 export async function showCustomColoredDiff(
   staged: boolean = false,
   unstaged: boolean = false,
+  commit: string = "",
   filesFilter: string[] = [],
 ) {
   const git: SimpleGit = simpleGit();
@@ -257,20 +244,35 @@ export async function showCustomColoredDiff(
       return;
     }
 
-    const stagedDiffOutput = await git.diff(["--cached"]);
-    const unstagedDiffOutput = await git.diff();
+    let stagedDiff = [] as DiffFile[];
+    let unstagedDiff = [] as DiffFile[];
 
-    const stagedDiff = staged
-      ? parseDiffOutput(stagedDiffOutput, true, filesFilter)
-      : [];
-    const unstagedDiff = unstaged
-      ? parseDiffOutput(unstagedDiffOutput, false, filesFilter)
-      : [];
+    if (commit.length > 0) {
+      console.log(text.blue(`Diff for commit: `), text.yellow(commit));
+      const commitDiffOutput = await git.show([
+        ...[commit],
+        ...(filesFilter.length > 0 ? ["--", filesFilter.join(" ")] : []),
+      ]);
+
+      stagedDiff = staged ? parseDiffOutput(commitDiffOutput, true) : [];
+    } else {
+      const stagedDiffOutput = await git.diff([
+        ...["--cached"],
+        ...(filesFilter.length > 0 ? ["--", filesFilter.join(" ")] : []),
+      ]);
+
+      const unstagedDiffOutput = await git.diff([
+        ...(filesFilter.length > 0 ? ["--", filesFilter.join(" ")] : []),
+      ]);
+
+      stagedDiff = staged ? parseDiffOutput(stagedDiffOutput, true) : [];
+      unstagedDiff = unstaged ? parseDiffOutput(unstagedDiffOutput, false) : [];
+    }
 
     const combinedDiff = combineDiffs(stagedDiff, unstagedDiff);
 
     await displayDiff(combinedDiff);
   } catch (error) {
-    console.log(text.red("Failed to get and display diff:"));
+    console.log(text.red("Failed to get and display diff:"), error);
   }
 }

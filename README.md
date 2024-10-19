@@ -1,6 +1,6 @@
 # AI Command-line tool
 
-Version: 	1.2.0
+Version: 	1.2.1
 
 [![asciicast](https://asciinema.org/a/680800.svg)](https://asciinema.org/a/680800)
 

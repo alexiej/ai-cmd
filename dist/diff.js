@@ -1,4 +1,3 @@
-import { minimatch } from "minimatch";
 import { simpleGit } from "simple-git";
 // @ts-nocheck
 import { highlightText } from "./lib/speed-highlight/terminal.js";
@@ -18,7 +17,7 @@ function parseHunk(lines, startLine) {
         isStaged: false,
     };
 }
-function parseDiffOutput(diffOutput, isStaged, filesFilter = []) {
+function parseDiffOutput(diffOutput, isStaged) {
     const diffFiles = [];
     const sections = diffOutput.split(/^diff --git /m).slice(1);
     sections.forEach((section) => {
@@ -29,13 +28,6 @@ function parseDiffOutput(diffOutput, isStaged, filesFilter = []) {
         const hunks = [];
         let currentHunkLines = [];
         let currentHunkHeader = null;
-        // Apply the file filter using minimatch for glob pattern matching
-        const fileMatchesFilter = filesFilter.length === 0 ||
-            filesFilter.some((pattern) => minimatch(newFilePath, pattern));
-        if (!fileMatchesFilter) {
-            // Skip the file if it doesn't match the filter
-            return;
-        }
         lines.forEach((line) => {
             if (line.startsWith("@@ ")) {
                 if (currentHunkHeader) {
@@ -162,25 +154,38 @@ async function displayDiff(diffFiles) {
         console.log(LINE_BOT);
     }
 }
-export async function showCustomColoredDiff(staged = false, unstaged = false, filesFilter = []) {
-    const git = simpleGit("..");
+export async function showCustomColoredDiff(staged = false, unstaged = false, commit = "", filesFilter = []) {
+    const git = simpleGit();
     try {
         if (!(await git.checkIsRepo())) {
             console.log(text.red("Not a git repository."));
             return;
         }
-        const stagedDiffOutput = await git.diff(["--cached"]);
-        const unstagedDiffOutput = await git.diff();
-        const stagedDiff = staged
-            ? parseDiffOutput(stagedDiffOutput, true, filesFilter)
-            : [];
-        const unstagedDiff = unstaged
-            ? parseDiffOutput(unstagedDiffOutput, false, filesFilter)
-            : [];
+        let stagedDiff = [];
+        let unstagedDiff = [];
+        if (commit.length > 0) {
+            console.log(text.blue(`Diff for commit: `), text.yellow(commit));
+            const commitDiffOutput = await git.show([
+                ...[commit],
+                ...(filesFilter.length > 0 ? ["--", filesFilter.join(" ")] : []),
+            ]);
+            stagedDiff = staged ? parseDiffOutput(commitDiffOutput, true) : [];
+        }
+        else {
+            const stagedDiffOutput = await git.diff([
+                ...["--cached"],
+                ...(filesFilter.length > 0 ? ["--", filesFilter.join(" ")] : []),
+            ]);
+            const unstagedDiffOutput = await git.diff([
+                ...(filesFilter.length > 0 ? ["--", filesFilter.join(" ")] : []),
+            ]);
+            stagedDiff = staged ? parseDiffOutput(stagedDiffOutput, true) : [];
+            unstagedDiff = unstaged ? parseDiffOutput(unstagedDiffOutput, false) : [];
+        }
         const combinedDiff = combineDiffs(stagedDiff, unstagedDiff);
         await displayDiff(combinedDiff);
     }
     catch (error) {
-        console.log(text.red("Failed to get and display diff:"));
+        console.log(text.red("Failed to get and display diff:"), error);
     }
 }

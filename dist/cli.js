@@ -40,10 +40,10 @@ program
     // .argument("[file]", "Show staged changes only")
     .option("-s, --staged", "Show staged changes only")
     .option("-u, --unstaged", "Show unstaged changes only")
-    //for testing run: `npm start -- diff -u -s`
+    .option("-c, --commit <commit>", "Show diff of a specific commit")
     .action(async (args, options) => {
-    const { staged, unstaged } = options;
-    await showCustomColoredDiff(staged || !unstaged, unstaged || !staged, args);
+    const { staged, unstaged, commit } = options;
+    await showCustomColoredDiff(staged || !unstaged, unstaged || !staged, commit, args);
 });
 program
     .command("commit")

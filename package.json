@@ -1,6 +1,6 @@
 {
   "name": "@alexiej/ai-cmd",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "AI command-line tool with configuration and git commit features",
   "main": "index.js",
   "scripts": {
