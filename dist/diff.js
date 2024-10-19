@@ -163,8 +163,12 @@ async function displayDiff(diffFiles) {
     }
 }
 export async function showCustomColoredDiff(staged = false, unstaged = false, filesFilter = []) {
-    const git = simpleGit();
+    const git = simpleGit("..");
     try {
+        if (!(await git.checkIsRepo())) {
+            console.log(text.red("Not a git repository."));
+            return;
+        }
         const stagedDiffOutput = await git.diff(["--cached"]);
         const unstagedDiffOutput = await git.diff();
         const stagedDiff = staged
@@ -177,6 +181,6 @@ export async function showCustomColoredDiff(staged = false, unstaged = false, fi
         await displayDiff(combinedDiff);
     }
     catch (error) {
-        console.error("Failed to get and display diff:", error);
+        console.log(text.red("Failed to get and display diff:"));
     }
 }

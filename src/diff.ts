@@ -252,6 +252,11 @@ export async function showCustomColoredDiff(
   const git: SimpleGit = simpleGit();
 
   try {
+    if (!(await git.checkIsRepo())) {
+      console.log(text.red("Not a git repository."));
+      return;
+    }
+
     const stagedDiffOutput = await git.diff(["--cached"]);
     const unstagedDiffOutput = await git.diff();
 
@@ -266,6 +271,6 @@ export async function showCustomColoredDiff(
 
     await displayDiff(combinedDiff);
   } catch (error) {
-    console.error("Failed to get and display diff:", error);
+    console.log(text.red("Failed to get and display diff:"));
   }
 }
